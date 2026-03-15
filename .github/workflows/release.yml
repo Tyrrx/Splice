@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+    - name: Restore dependencies
+      run: dotnet restore InterceptorFramework.slnx
+
+    - name: Build
+      run: dotnet build InterceptorFramework.slnx --configuration Release --no-restore /p:Version=${{ steps.get_version.outputs.VERSION }}
+
+    - name: Test
+      run: dotnet test InterceptorFramework.slnx --configuration Release --no-build
+
+    - name: Pack
+      run: dotnet pack InterceptorFramework/InterceptorFramework/InterceptorFramework.csproj --configuration Release --no-build /p:Version=${{ steps.get_version.outputs.VERSION }} --output .
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: "*.nupkg"
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Push to NuGet
+      run: dotnet nuget push "*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

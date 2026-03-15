@@ -66,7 +66,7 @@ dotnet format InterceptorFramework.slnx --verify-no-changes
 
 ### Types & Nullability
 - **Nullable Reference Types:** Enabled project-wide (`<Nullable>enable</Nullable>`). Use `?` for nullable types.
-- **Modern C#:** Use C# 14 features like Primary Constructors where appropriate (e.g., `InterceptsLocationAttribute(string filePath, int line, int column)`).
+- **Modern C#:** Use C# 14 features like Primary Constructors where appropriate (e.g., `InterceptsLocationAttribute(int version, string contentHash, string filePath, int line, int column)`).
 - **Collections:** Use `ImmutableArray<T>` or `IEnumerable<T>` for public APIs and internal logic where immutability is preferred, especially in Source Generators.
 
 ### Source Generator Specifics

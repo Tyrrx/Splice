@@ -46,22 +46,35 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
-            "ReportAttribute.g.cs",
-            SourceText.From(AttributeSourceCode, Encoding.UTF8)));
+        context.RegisterPostInitializationOutput(ctx => {
+            ctx.AddSource(
+                "ReportAttribute.g.cs",
+                SourceText.From(AttributeSourceCode, Encoding.UTF8));
+        });
 
         var interceptingInvocationsProvider = context.SyntaxProvider.CreateSyntaxProvider(
-                predicate: (syntaxNode, _) => syntaxNode is InvocationExpressionSyntax
-                {
-                    Expression: MemberAccessExpressionSyntax
-                },
+                predicate: (syntaxNode, _) => syntaxNode is InvocationExpressionSyntax,
                 transform: (GeneratorSyntaxContext context, CancellationToken token) =>
                 {
                     var invocation = (InvocationExpressionSyntax)context.Node;
-                    var interceptableLocation = context.SemanticModel.GetInterceptableLocation(invocation);
+                    var semanticModel = context.SemanticModel;
+                    var symbolInfo = semanticModel.GetSymbolInfo(invocation);
+                    var methodSymbol = symbolInfo.Symbol as IMethodSymbol;
+
+                    if (methodSymbol is null && symbolInfo.CandidateSymbols.Length > 0)
+                    {
+                        methodSymbol = symbolInfo.CandidateSymbols[0] as IMethodSymbol;
+                    }
+
+                    if (methodSymbol is null)
+                    {
+                         return (invocationExpression: invocation, data: (string?)null, methodSymbol: (IMethodSymbol?)null);
+                    }
+
+                    var interceptableLocation = semanticModel.GetInterceptableLocation(invocation);
                     if (interceptableLocation is null)
                     {
-                        throw new Exception("Bug");
+                        return (invocationExpression: invocation, data: (string?)null, methodSymbol: (IMethodSymbol?)null);
                     }
 
                     // Extract the opaque 'Data' string from InterceptableLocation
@@ -69,8 +82,9 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
                     var dataProp = locType.GetProperty("Data", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                     var data = dataProp?.GetValue(interceptableLocation) as string ?? "";
 
-                    return (invocationExpression: invocation, data);
+                    return (invocationExpression: invocation, data: (string?)data, methodSymbol);
                 })
+            .Where(t => t.data is not null && t.methodSymbol is not null)
             .Collect();
 
         var interceptorDeclarationProvider = context.SyntaxProvider
@@ -78,54 +92,46 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
                 (s, _) => s is MethodDeclarationSyntax,
                 (ctx, _) => GetMethodForSourceGen(ctx))
             .Where(t => t.attributeFound)
-            .Select((t, _) => (t.method, t.targetType, t.methodName))
+            .Select((t, _) => (t.method, t.targetType, t.methodName));
+
+        var combinedProvider = interceptorDeclarationProvider
             .Combine(interceptingInvocationsProvider)
             .Select((t, _) =>
             {
                 var ((interceptor, targetType, targetMethodName), interceptions) = t;
                 var candidates = interceptions
-                    .Where(i =>
-                    {
-                        var access = (MemberAccessExpressionSyntax)i.invocationExpression.Expression;
-                        return access.Name.Identifier.Text == targetMethodName;
-                    })
+                    .Select(i => (i.invocationExpression, i.data!, (IMethodSymbol?)i.methodSymbol))
                     .ToImmutableArray();
                 return (interceptor, targetType, targetMethodName, candidates);
             });
 
-
-        context.RegisterSourceOutput(context.CompilationProvider.Combine(interceptorDeclarationProvider.Collect()),
+        context.RegisterSourceOutput(context.CompilationProvider.Combine(combinedProvider.Collect()),
             (ctx, t) => GenerateCode(ctx, t.Left, t.Right));
     }
 
     private (MethodDeclarationSyntax method, bool attributeFound, INamedTypeSymbol? targetType, string? methodName) GetMethodForSourceGen(GeneratorSyntaxContext context)
     {
         var methodDeclarationSyntax = (MethodDeclarationSyntax)context.Node;
+        var methodSymbol = context.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax);
+        if (methodSymbol == null) return (methodDeclarationSyntax, false, null, null);
 
         // Go through all attributes of the class.
-        foreach (AttributeListSyntax attributeListSyntax in methodDeclarationSyntax.AttributeLists)
-        foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
+        foreach (var attrData in methodSymbol.GetAttributes())
         {
-            if (context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
-                continue; // if we can't get the symbol, ignore it
+            var attributeClass = attrData.AttributeClass;
+            if (attributeClass == null) continue;
 
-            string attributeName = attributeSymbol.ContainingType.ToDisplayString();
-
+            string attributeName = attributeClass.ToDisplayString();
+            
             // Check the full name of the [Interceptor] attribute.
             if (attributeName.StartsWith($"{Namespace}.{AttributeName}"))
             {
-                var attrData = context.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax)?
-                    .GetAttributes()
-                    .FirstOrDefault(a => a.AttributeClass?.ToDisplayString().StartsWith($"{Namespace}.{AttributeName}") == true);
-
-                if (attrData is null) continue;
-
                 INamedTypeSymbol? targetType = null;
                 string? methodName = null;
 
-                if (attrData.AttributeClass?.IsGenericType == true)
+                if (attributeClass.IsGenericType)
                 {
-                    targetType = attrData.AttributeClass.TypeArguments.FirstOrDefault() as INamedTypeSymbol;
+                    targetType = attributeClass.TypeArguments.FirstOrDefault() as INamedTypeSymbol;
                     methodName = attrData.ConstructorArguments.FirstOrDefault().Value as string;
                 }
                 else if (attrData.ConstructorArguments.Length >= 2)
@@ -147,10 +153,11 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
     private void GenerateCode(
         SourceProductionContext context,
         Compilation compilation,
-        ImmutableArray<(MethodDeclarationSyntax interceptor, INamedTypeSymbol targetType, string targetMethodName, ImmutableArray<(InvocationExpressionSyntax invocationExpression, string data)> candidates)> interceptorMethods)
+        ImmutableArray<(MethodDeclarationSyntax interceptor, INamedTypeSymbol? targetType, string? targetMethodName, ImmutableArray<(InvocationExpressionSyntax invocationExpression, string data, IMethodSymbol? methodSymbol)> candidates)> interceptorMethods)
     {
         foreach (var (interceptor, targetType, targetMethodName, candidates) in interceptorMethods)
         {
+            if (targetType is null || targetMethodName is null) continue;
             var semanticModel = compilation.GetSemanticModel(interceptor.SyntaxTree);
 
             if (ModelExtensions.GetDeclaredSymbol(semanticModel, interceptor) is not IMethodSymbol interceptionMethodSymbol)
@@ -164,26 +171,20 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
 
             var targets = candidates.Where(candidate =>
             {
-                var candidateSemanticModel = compilation.GetSemanticModel(candidate.invocationExpression.SyntaxTree);
-                if (candidateSemanticModel.GetSymbolInfo(candidate.invocationExpression).Symbol is not IMethodSymbol candidateMethodSymbol)
+                var targetDefinition = candidate.Item3; 
+                if (targetDefinition is null) return false;
+                
+                if (targetDefinition.IsGenericMethod)
                 {
-                    return false;
+                    targetDefinition = targetDefinition.OriginalDefinition;
                 }
 
-                if (candidateMethodSymbol.Name != targetMethodName)
-                {
-                    return false;
-                }
-
-                if (candidateMethodSymbol.Arity != interceptionMethodSymbol.Arity)
-                {
-                    return false;
-                }
-
-                if (!SymbolEqualityComparer.IncludeNullability.Equals(candidateMethodSymbol.ContainingType, targetType))
-                {
-                    return false;
-                }
+                if (targetDefinition.Name != targetMethodName) return false;
+                
+                // Compare containing types by name
+                if (targetDefinition.ContainingType.ToDisplayString() != targetType.ToDisplayString()) return false;
+                
+                if (targetDefinition.Arity != interceptionMethodSymbol.Arity) return false;
 
                 // Recursion protection: exclude calls that are within the interceptor method's own body
                 if (candidate.invocationExpression.SyntaxTree == interceptor.SyntaxTree &&
@@ -192,8 +193,44 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
                     return false;
                 }
 
-                return candidateMethodSymbol.Parameters.Select(t => t.Type)
-                    .SequenceEqual(interceptorParameterTypes, SymbolEqualityComparer.IncludeNullability);
+                var targetParamTypes = targetDefinition.Parameters.Select(t => t.Type).ToImmutableArray();
+                var interceptorParamTypes = interceptionMethodSymbol.Parameters.Select(t => t.Type).ToImmutableArray();
+
+                // If the interceptor is an extension method, we need to handle the 'this' parameter
+                int interceptorParamOffset = 0;
+                if (interceptionMethodSymbol.IsExtensionMethod)
+                {
+                    interceptorParamOffset = 1;
+                }
+
+                if (targetParamTypes.Length != (interceptorParamTypes.Length - interceptorParamOffset)) return false;
+
+                for (int i = 0; i < targetParamTypes.Length; i++)
+                {
+                    var targetParam = targetParamTypes[i];
+                    var interceptorParam = interceptorParamTypes[i + interceptorParamOffset];
+
+                    if (targetParam.Kind == SymbolKind.TypeParameter)
+                    {
+                        if (interceptorParam.Kind == SymbolKind.TypeParameter)
+                        {
+                            var tp = (ITypeParameterSymbol)targetParam;
+                            var itp = (ITypeParameterSymbol)interceptorParam;
+                            // Relax check for testing: any method type parameter matches any method type parameter of same ordinal
+                            if (tp.Ordinal != itp.Ordinal) return false;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else if (targetParam.ToDisplayString() != interceptorParam.ToDisplayString())
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }).ToImmutableArray();
 
             if (targets.Length == 0)
@@ -228,7 +265,6 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
         return methodSyntax.Ancestors().OfType<ClassDeclarationSyntax>().First();
     }
 
-    // Returns the method signature as a string (e.g., "public static partial int Foo<T>(int x)")
     private string GetMethodSignature(MethodDeclarationSyntax method)
     {
         var modifiers = method.Modifiers.Select(m => m.Text).ToList();
@@ -238,7 +274,15 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
             modifiers.Add("partial");
         }
         var modifiersString = string.Join(" ", modifiers);
-        var typeParams = method.TypeParameterList?.ToFullString() ?? "";
-        return $"{modifiersString} {method.ReturnType} {method.Identifier}{typeParams}{method.ParameterList}".Trim();
+        var typeParams = method.TypeParameterList?.ToString().Trim() ?? "";
+        
+        // Always include all parameters for the partial declaration
+        var parameters = method.ParameterList.Parameters;
+        var filteredParameters = parameters.Select(p => p.ToString().Trim());
+        var parameterList = "(" + string.Join(", ", filteredParameters) + ")";
+
+        var constraints = string.Join(" ", method.ConstraintClauses.Select(c => c.ToString().Trim())).Trim();
+        
+        return $"{modifiersString} {method.ReturnType.ToString().Trim()} {method.Identifier.Text.Trim()}{typeParams}{parameterList} {constraints}".Trim();
     }
 }

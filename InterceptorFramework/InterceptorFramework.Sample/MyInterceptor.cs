@@ -11,4 +11,10 @@ public static partial class MyInterceptor
         Console.WriteLine($"[MyInterceptor] {message}");
     }
     
+    [Interceptor(typeof(GenericTest), nameof(GenericTest.GenericMethodToIntercept))]
+    public static partial void GenericMethodToIntercept<T>(this GenericTest target, T value)
+    {
+        Console.WriteLine($"[Generic Interceptor] {value}");
+    }
+    
 }

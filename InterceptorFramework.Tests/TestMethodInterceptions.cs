@@ -1,10 +1,11 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace InterceptorFramework.Tests;
 
-public class TestMethodInterceptions
+public partial class TestMethodInterceptions
 {
     private const string Usage =
         // language=CSharp
@@ -62,7 +63,8 @@ public class TestMethodInterceptions
         
         var generatedSource = runResult.GeneratedTrees.Last().ToString();
         Assert.Contains("[InterceptsLocation", generatedSource);
-        Assert.Contains("contentHash", generatedSource);
+        Assert.Contains("data", generatedSource);
+        Assert.Single(ValidationRegex().Matches(generatedSource));
     }
 
     [Fact]
@@ -120,4 +122,7 @@ public class TestMethodInterceptions
         var attributeCount = generatedSource.Split(["[InterceptsLocation"], System.StringSplitOptions.None).Length - 1;
         Assert.Equal(1, attributeCount); // Only the call in TestClass should be intercepted
     }
+
+    [GeneratedRegex("""\[InterceptsLocation\(version: 1, data: "[^"]+"\)\]""")]
+    private static partial Regex ValidationRegex();
 }

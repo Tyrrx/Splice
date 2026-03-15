@@ -261,25 +261,6 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
                 tuple.symbol?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == fullyQualifiedMethodName)
             .method;
 
-    // public static MethodDeclarationSyntax FindMethodBy(
-    //     SemanticModel semanticModel,
-    //     INamedTypeSymbol interceptingTypeSymbol,
-    //     IMethodSymbol interceptorMethodSymbol)
-    // {
-    //     var methodDeclarations = interceptingTypeSymbol
-    //         .GetMembers(interceptingTypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
-    //         .OfType<IMethodSymbol>()
-    //         .Where(s => s.Name == interceptorMethodSymbol.Name);
-    //
-    //     var targetMethodSymbol =
-    //         methodDeclarations.First(m =>
-    //             interceptorMethodSymbol.Parameters.Select(t => t.Type).SequenceEqual(m.Parameters.Select(t => t.Type),
-    //                 SymbolEqualityComparer.IncludeNullability));
-    //
-    //
-    //     // SymbolFinder.FindReferencesAsync(targetMethodSymbol,).Wait();
-    // }
-
     private static ClassDeclarationSyntax GetContainingClass(MethodDeclarationSyntax methodSyntax)
     {
         return methodSyntax.Ancestors().OfType<ClassDeclarationSyntax>().First();

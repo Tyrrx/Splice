@@ -1,6 +1,7 @@
 # InterceptorFramework 🚀
 
-![CI](https://github.com/drtz/InterceptorFramework/actions/workflows/ci.yml/badge.badge.svg)
+![GitHub License](https://img.shields.io/github/license/Tyrrx/InterceptorFramework)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Tyrrx/InterceptorFramework/CI)
 
 A C# .NET solution focused on Roslyn Source Generators, specifically implementing C# 14 "Interceptors". This framework allows you to easily intercept and replace method calls at compile time.
 

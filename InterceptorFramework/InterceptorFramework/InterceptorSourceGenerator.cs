@@ -71,6 +71,19 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
                          return (invocationExpression: invocation, data: (string?)null, methodSymbol: (IMethodSymbol?)null);
                     }
 
+                    // For generic class methods, we need the original definition to match correctly
+                    if (methodSymbol.IsGenericMethod)
+                    {
+                        methodSymbol = methodSymbol.OriginalDefinition;
+                    }
+                    else if (methodSymbol.ContainingType.IsGenericType)
+                    {
+                        // This handles non-generic methods in generic classes
+                        // We want the method symbol from the open generic type
+                        var originalType = methodSymbol.ContainingType.OriginalDefinition;
+                        methodSymbol = originalType.GetMembers(methodSymbol.Name).OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == methodSymbol.Parameters.Length);
+                    }
+
                     var interceptableLocation = semanticModel.GetInterceptableLocation(invocation);
                     if (interceptableLocation is null)
                     {
@@ -114,6 +127,19 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
         var methodDeclarationSyntax = (MethodDeclarationSyntax)context.Node;
         var methodSymbol = context.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax);
         if (methodSymbol == null) return (methodDeclarationSyntax, false, null, null);
+
+        // Validation: Interceptors cannot be declared in generic types at any level of nesting.
+        var containingType = methodSymbol.ContainingType;
+        while (containingType != null)
+        {
+            if (containingType.IsGenericType)
+            {
+                // We should ideally report a diagnostic here, but for now we'll just skip it
+                // and maybe log it or rely on the fact that it won't match targets.
+                return (methodDeclarationSyntax, false, null, null);
+            }
+            containingType = containingType.ContainingType;
+        }
 
         // Go through all attributes of the class.
         foreach (var attrData in methodSymbol.GetAttributes())
@@ -171,20 +197,19 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
 
             var targets = candidates.Where(candidate =>
             {
-                var targetDefinition = candidate.Item3; 
-                if (targetDefinition is null) return false;
+                var targetMethod = candidate.Item3; 
+                if (targetMethod is null) return false;
                 
-                if (targetDefinition.IsGenericMethod)
-                {
-                    targetDefinition = targetDefinition.OriginalDefinition;
-                }
+                var originalTargetMethod = targetMethod.IsGenericMethod ? targetMethod.OriginalDefinition : targetMethod;
 
-                if (targetDefinition.Name != targetMethodName) return false;
+                if (originalTargetMethod.Name != targetMethodName) return false;
                 
-                // Compare containing types by name
-                if (targetDefinition.ContainingType.ToDisplayString() != targetType.ToDisplayString()) return false;
+                // Compare containing types using SymbolEqualityComparer and OriginalDefinition to handle generic classes
+                if (!SymbolEqualityComparer.Default.Equals(originalTargetMethod.ContainingType.OriginalDefinition, targetType.OriginalDefinition)) return false;
                 
-                if (targetDefinition.Arity != interceptionMethodSymbol.Arity) return false;
+                // Arity check: interceptor arity must be 0 OR equal to the sum of containing type arities and method arity
+                int requiredArity = GetRequiredArity(originalTargetMethod);
+                if (interceptionMethodSymbol.Arity != 0 && interceptionMethodSymbol.Arity != requiredArity) return false;
 
                 // Recursion protection: exclude calls that are within the interceptor method's own body
                 if (candidate.invocationExpression.SyntaxTree == interceptor.SyntaxTree &&
@@ -193,38 +218,22 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
                     return false;
                 }
 
-                var targetParamTypes = targetDefinition.Parameters.Select(t => t.Type).ToImmutableArray();
+                var targetParamTypes = originalTargetMethod.Parameters.Select(t => t.Type).ToImmutableArray();
                 var interceptorParamTypes = interceptionMethodSymbol.Parameters.Select(t => t.Type).ToImmutableArray();
 
                 // If the interceptor is an extension method, we need to handle the 'this' parameter
-                int interceptorParamOffset = 0;
-                if (interceptionMethodSymbol.IsExtensionMethod)
-                {
-                    interceptorParamOffset = 1;
-                }
+                int interceptorParamOffset = interceptionMethodSymbol.IsExtensionMethod ? 1 : 0;
 
                 if (targetParamTypes.Length != (interceptorParamTypes.Length - interceptorParamOffset)) return false;
+
+                var allTargetTypeParameters = GetAllTypeParameters(originalTargetMethod);
 
                 for (int i = 0; i < targetParamTypes.Length; i++)
                 {
                     var targetParam = targetParamTypes[i];
                     var interceptorParam = interceptorParamTypes[i + interceptorParamOffset];
 
-                    if (targetParam.Kind == SymbolKind.TypeParameter)
-                    {
-                        if (interceptorParam.Kind == SymbolKind.TypeParameter)
-                        {
-                            var tp = (ITypeParameterSymbol)targetParam;
-                            var itp = (ITypeParameterSymbol)interceptorParam;
-                            // Relax check for testing: any method type parameter matches any method type parameter of same ordinal
-                            if (tp.Ordinal != itp.Ordinal) return false;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    else if (targetParam.ToDisplayString() != interceptorParam.ToDisplayString())
+                    if (!IsTypeCompatible(targetParam, interceptorParam, allTargetTypeParameters, interceptionMethodSymbol.TypeParameters))
                     {
                         return false;
                     }
@@ -258,6 +267,70 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
 
             context.AddSource($"{namespaceName}.{className}.{interceptor.Identifier.Text}.g.cs", SourceText.From(code, Encoding.UTF8));
         }
+    }
+
+    private static int GetRequiredArity(IMethodSymbol method)
+    {
+        int arity = method.Arity;
+        var type = method.ContainingType;
+        while (type != null)
+        {
+            arity += type.Arity;
+            type = type.ContainingType;
+        }
+        return arity;
+    }
+
+    private static ImmutableArray<ITypeParameterSymbol> GetAllTypeParameters(IMethodSymbol method)
+    {
+        var builder = ImmutableArray.CreateBuilder<ITypeParameterSymbol>();
+        var type = method.ContainingType;
+        var types = new List<INamedTypeSymbol>();
+        while (type != null)
+        {
+            types.Add(type);
+            type = type.ContainingType;
+        }
+        types.Reverse();
+        foreach (var t in types)
+        {
+            builder.AddRange(t.TypeParameters);
+        }
+        builder.AddRange(method.TypeParameters);
+        return builder.ToImmutable();
+    }
+
+    private static bool IsTypeCompatible(ITypeSymbol targetType, ITypeSymbol interceptorType, ImmutableArray<ITypeParameterSymbol> allTargetTypeParameters, ImmutableArray<ITypeParameterSymbol> interceptorTypeParameters)
+    {
+        if (targetType.Kind == SymbolKind.TypeParameter)
+        {
+            if (interceptorType.Kind != SymbolKind.TypeParameter) return false;
+
+            var targetTp = (ITypeParameterSymbol)targetType;
+            var interceptorTp = (ITypeParameterSymbol)interceptorType;
+
+            int targetIndex = allTargetTypeParameters.IndexOf(targetTp, SymbolEqualityComparer.Default);
+            int interceptorIndex = interceptorTypeParameters.IndexOf(interceptorTp, SymbolEqualityComparer.Default);
+
+            return targetIndex == interceptorIndex && targetIndex != -1;
+        }
+
+        if (targetType is INamedTypeSymbol targetNamed && interceptorType is INamedTypeSymbol interceptorNamed)
+        {
+            if (!SymbolEqualityComparer.Default.Equals(targetNamed.OriginalDefinition, interceptorNamed.OriginalDefinition)) return false;
+            if (targetNamed.TypeArguments.Length != interceptorNamed.TypeArguments.Length) return false;
+
+            for (int i = 0; i < targetNamed.TypeArguments.Length; i++)
+            {
+                if (!IsTypeCompatible(targetNamed.TypeArguments[i], interceptorNamed.TypeArguments[i], allTargetTypeParameters, interceptorTypeParameters))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return SymbolEqualityComparer.Default.Equals(targetType, interceptorType);
     }
 
     private static ClassDeclarationSyntax GetContainingClass(MethodDeclarationSyntax methodSyntax)

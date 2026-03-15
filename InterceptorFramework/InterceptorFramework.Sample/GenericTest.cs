@@ -1,6 +1,6 @@
 namespace InterceptorFramework.Sample;
 
-public class GenericTest
+public partial class GenericTest
 {
     public void GenericMethodToIntercept<T>(T value)
     {

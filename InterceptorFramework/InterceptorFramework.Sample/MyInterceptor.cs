@@ -12,9 +12,9 @@ public static partial class MyInterceptor
     }
     
     [Interceptor(typeof(GenericTest), nameof(GenericTest.GenericMethodToIntercept))]
-    public static void GenericMethodToIntercept<T>(T value)
+    public static partial void GenericMethodToIntercept<T>(this GenericTest target, T value)
     {
-        Console.WriteLine($"GenericMethodToIntercept called with value: {value}");
+        Console.WriteLine($"[Generic Interceptor] {value}");
     }
     
 }

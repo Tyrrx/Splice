@@ -223,56 +223,9 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
         }
     }
 
-    private IEnumerable<InvocationExpressionSyntax> FindMethodCalls(
-        Compilation compilation,
-        string fullyQualifiedTypeName,
-        string methodName)
-    {
-        return compilation.SyntaxTrees
-            .SelectMany(tree =>
-            {
-                var semanticModel = compilation.GetSemanticModel(tree);
-                return tree.GetRoot()
-                    .DescendantNodes()
-                    .OfType<InvocationExpressionSyntax>()
-                    .Where(invocation =>
-                    {
-                        var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-
-                        return
-                            symbol != null
-                            && symbol.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ==
-                            fullyQualifiedTypeName
-                            && symbol.Name == methodName;
-                    });
-            });
-    }
-
-    public static MethodDeclarationSyntax? FindMethodByFullyQualifiedName(Compilation compilation,
-        string fullyQualifiedMethodName)
-        => compilation.SyntaxTrees
-            .SelectMany(tree => tree.GetRoot()
-                .DescendantNodes()
-                .OfType<MethodDeclarationSyntax>()
-                .Select(method => (method,
-                    symbol: ModelExtensions.GetDeclaredSymbol(compilation.GetSemanticModel(tree), method) as
-                        IMethodSymbol)))
-            .FirstOrDefault(tuple =>
-                tuple.symbol?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == fullyQualifiedMethodName)
-            .method;
-
     private static ClassDeclarationSyntax GetContainingClass(MethodDeclarationSyntax methodSyntax)
     {
         return methodSyntax.Ancestors().OfType<ClassDeclarationSyntax>().First();
-    }
-
-    private string GetTypeParameters(MethodDeclarationSyntax method)
-    {
-        if (method.TypeParameterList == null)
-            return string.Empty;
-
-        var typeParams = method.TypeParameterList.ToFullString();
-        return typeParams;
     }
 
     // Returns the method signature as a string (e.g., "public static partial int Foo<T>(int x)")

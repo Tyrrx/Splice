@@ -8,7 +8,7 @@ The CD workflow SHALL execute when a git tag matching the pattern `v*` is pushed
 - **THEN** the GitHub Actions workflow `release.yml` starts executing
 
 ### Requirement: Automated NuGet Packaging
-The CD workflow SHALL build and pack the `InterceptorFramework` project into a `.nupkg` file using the version specified in the git tag.
+The CD workflow SHALL build and pack the `Splice` project into a `.nupkg` file using the version specified in the git tag.
 
 #### Scenario: Package creation
 - **WHEN** the workflow executes `dotnet pack`

@@ -20,5 +20,5 @@
 - [x] 3.4 Ensure `GetMethodSignature` correctly captures and emits the combined generic parameters and constraints.
 - [x] 3.5 Add validation to detect and report if an interceptor is declared within a generic type (disallowed by spec).
 - [x] 4.1 Run all tests and ensure they pass.
-- [x] 4.2 Update `InterceptorFramework.Sample` with a generic class interception example.
+- [x] 4.2 Update `Splice.Sample` with a generic class interception example.
 - [x] 4.3 Verify that existing non-generic interceptions still work (regression testing).

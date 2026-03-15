@@ -1,6 +1,6 @@
 ## Context
 
-The InterceptorFramework project is a C# .NET solution. It currently has no automated CI/CD. We need to integrate GitHub Actions to automate building, testing, and releasing the source generator.
+The Splice project is a C# .NET solution. It currently has no automated CI/CD. We need to integrate GitHub Actions to automate building, testing, and releasing the source generator.
 
 ## Goals / Non-Goals
 
@@ -27,7 +27,7 @@ The InterceptorFramework project is a C# .NET solution. It currently has no auto
     - Checkout code.
     - Setup .NET SDK (latest stable).
     - Restore dependencies.
-    - Build solution (`InterceptorFramework.slnx`).
+    - Build solution (`Splice.slnx`).
     - Run tests with `dotnet test` and generate a TRX or JUnit report.
     - Use a GitHub Action (e.g., `dorny/test-reporter`) to surface test results.
 

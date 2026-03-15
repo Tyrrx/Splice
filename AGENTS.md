@@ -1,9 +1,9 @@
-# Agent Guide: InterceptorFramework
+# Agent Guide: Splice
 
-This guide provides essential information for AI agents working on the InterceptorFramework repository.
+This guide provides essential information for AI agents working on the Splice repository.
 
 ## Project Overview
-InterceptorFramework is a C# .NET solution focused on Roslyn Source Generators, specifically implementing C# 14 "Interceptors". It consists of the core generator, a sample project, and a test suite.
+Splice is a C# .NET solution focused on Roslyn Source Generators, specifically implementing C# 14 "Interceptors". It consists of the core generator, a sample project, and a test suite.
 
 ## Tech Stack
 - **Languages:** C# (Latest / 14)
@@ -19,16 +19,16 @@ InterceptorFramework is a C# .NET solution focused on Roslyn Source Generators, 
 dotnet restore
 
 # Build the entire solution
-dotnet build InterceptorFramework.slnx
+dotnet build Splice.slnx
 
 # Build a specific project
-dotnet build InterceptorFramework/InterceptorFramework/InterceptorFramework.csproj
+dotnet build src/Splice/Splice.csproj
 ```
 
 ### Testing
 ```bash
 # Run all tests
-dotnet test InterceptorFramework.Tests/InterceptorFramework.Tests.csproj
+dotnet test src/Splice.Tests/Splice.Tests.csproj
 
 # Run a specific test class
 dotnet test --filter "FullyQualifiedClassName"
@@ -44,7 +44,7 @@ dotnet test --logger "console;verbosity=detailed"
 No explicit linter (like StyleCop) is configured in `.csproj`, but follow standard .NET conventions.
 ```bash
 # Check formatting (if dotnet-format is installed)
-dotnet format InterceptorFramework.slnx --verify-no-changes
+dotnet format Splice.slnx --verify-no-changes
 ```
 
 ## Code Style & Guidelines
@@ -53,10 +53,10 @@ dotnet format InterceptorFramework.slnx --verify-no-changes
 - **Classes/Methods/Properties:** PascalCase (e.g., `InterceptorSourceGenerator`, `GenerateCode`)
 - **Private Fields:** camelCase (e.g., `myField`). DO NOT use underscore prefix.
 - **Parameters/Local Variables:** camelCase (e.g., `semanticModel`, `context`)
-- **Namespaces:** Match folder structure (e.g., `namespace InterceptorFramework;`)
+- **Namespaces:** Match folder structure (e.g., `namespace Splice;`)
 
 ### Formatting
-- Use file-scoped namespaces (e.g., `namespace InterceptorFramework;`).
+- Use file-scoped namespaces (e.g., `namespace Splice;`).
 - Use `var` when the type is obvious from the right side of the assignment.
 - Prefer expression-bodied members for simple methods and properties.
 - Prefer LINQ over loops when a value is returned.
@@ -83,9 +83,9 @@ dotnet format InterceptorFramework.slnx --verify-no-changes
 - Remove unused using directives.
 
 ## Repository Structure
-- `InterceptorFramework/InterceptorFramework/`: The core Roslyn Source Generator.
-- `InterceptorFramework/InterceptorFramework.Sample/`: A project demonstrating usage of the interceptors.
-- `InterceptorFramework.Tests/`: Unit tests using xUnit.
+- `src/Splice/`: The core Roslyn Source Generator.
+- `src/Splice.Sample/`: A project demonstrating usage of the interceptors.
+- `src/Splice.Tests/`: Unit tests using xUnit.
 
 ## External Rules
 - **Cursor/Copilot:** No specific `.cursorrules` or `.github/copilot-instructions.md` found. Adhere to these AGENTS.md guidelines as the primary source of truth.

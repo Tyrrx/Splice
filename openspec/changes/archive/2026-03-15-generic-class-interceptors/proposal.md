@@ -1,6 +1,6 @@
 ## Why
 
-Currently, the InterceptorFramework supports intercepting methods, but it does not fully support members of generic classes where the interceptor itself needs to match the combined generic signature of the class and the method. The C# interceptor specification requires that interceptors must be non-generic OR have arity equal to the sum of the original method's arity and all containing type arities. This change ensures the framework adheres to the specification while supporting these complex generic scenarios.
+Currently, the Splice supports intercepting methods, but it does not fully support members of generic classes where the interceptor itself needs to match the combined generic signature of the class and the method. The C# interceptor specification requires that interceptors must be non-generic OR have arity equal to the sum of the original method's arity and all containing type arities. This change ensures the framework adheres to the specification while supporting these complex generic scenarios.
 
 ## What Changes
 
@@ -21,5 +21,5 @@ Currently, the InterceptorFramework supports intercepting methods, but it does n
 
 - `InterceptorSourceGenerator`: Core logic for calculating arity and ordering type parameters in generated code.
 - `InterceptorAttribute`: Documentation and validation updates for generic class context.
-- `InterceptorFramework.Sample`: Add examples showing the correct arity for generic class members (e.g., `Interceptor<TClass, TMethod>`).
-- `InterceptorFramework.Tests`: Comprehensive tests for nested generic contexts and arity validation.
+- `Splice.Sample`: Add examples showing the correct arity for generic class members (e.g., `Interceptor<TClass, TMethod>`).
+- `Splice.Tests`: Comprehensive tests for nested generic contexts and arity validation.

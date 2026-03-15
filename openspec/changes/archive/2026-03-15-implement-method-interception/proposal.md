@@ -1,6 +1,6 @@
 ## Why
 
-The source generator currently lacks the implementation to effectively intercept method calls using C# 14 Interceptors. This change is needed to complete the core functionality of the `InterceptorFramework`, allowing users to redirect method calls (like `Console.WriteLine`) to custom interceptor methods via a simple attribute-based approach.
+The source generator currently lacks the implementation to effectively intercept method calls using C# 14 Interceptors. This change is needed to complete the core functionality of the `Splice`, allowing users to redirect method calls (like `Console.WriteLine`) to custom interceptor methods via a simple attribute-based approach.
 
 ## What Changes
 
@@ -22,6 +22,6 @@ The source generator currently lacks the implementation to effectively intercept
 ## Impact
 
 - `InterceptorSourceGenerator.cs`: Major implementation changes to the `Initialize` and `GenerateCode` methods.
-- `InterceptorFramework.csproj`: Potential updates to Roslyn dependencies and project properties.
-- `InterceptorFramework.Tests.csproj`: Update target framework to `net10.0`.
-- `InterceptorFramework.Sample.csproj`: Update target framework to `net10.0`.
+- `Splice.csproj`: Potential updates to Roslyn dependencies and project properties.
+- `Splice.Tests.csproj`: Update target framework to `net10.0`.
+- `Splice.Sample.csproj`: Update target framework to `net10.0`.

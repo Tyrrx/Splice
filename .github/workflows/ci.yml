@@ -23,13 +23,13 @@ jobs:
         dotnet-version: '10.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore InterceptorFramework.slnx
+      run: dotnet restore Splice.slnx
 
     - name: Build
-      run: dotnet build InterceptorFramework.slnx --configuration Release --no-restore
+      run: dotnet build Splice.slnx --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test InterceptorFramework.slnx --configuration Release --no-build --logger "trx;LogFileName=test-results.trx"
+      run: dotnet test Splice.slnx --configuration Release --no-build --logger "trx;LogFileName=test-results.trx"
 
     - name: Test Report
       uses: dorny/test-reporter@v1

@@ -1,7 +1,7 @@
 ## 1. Preparation and Testing
 
-- [x] 1.1 Add a new test case in `InterceptorFramework.Tests` that attempts to intercept a generic method.
-- [x] 1.2 Update `InterceptorFramework.Sample` with a generic method and a corresponding interceptor to verify the failure/current state.
+- [x] 1.1 Add a new test case in `Splice.Tests` that attempts to intercept a generic method.
+- [x] 1.2 Update `Splice.Sample` with a generic method and a corresponding interceptor to verify the failure/current state.
 
 ## 2. Source Generator Enhancements
 

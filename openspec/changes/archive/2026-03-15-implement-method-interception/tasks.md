@@ -1,7 +1,7 @@
 ## 1. Project Setup and Infrastructure
 
-- [x] 1.1 Update InterceptorFramework.Tests to target net10.0
-- [x] 1.2 Update InterceptorFramework.Sample to target net10.0
+- [x] 1.1 Update Splice.Tests to target net10.0
+- [x] 1.2 Update Splice.Sample to target net10.0
 - [x] 1.3 Ensure C# 14 / latest language version is set in all project files
 - [x] 1.4 Update AGENTS.md to clarify C# 14 and net10.0 requirements
 

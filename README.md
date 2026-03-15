@@ -1,7 +1,7 @@
-# InterceptorFramework 🚀
+# Splice 🚀
 
-![GitHub License](https://img.shields.io/github/license/Tyrrx/InterceptorFramework)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Tyrrx/InterceptorFramework/CI)
+![GitHub License](https://img.shields.io/github/license/Tyrrx/Splice)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Tyrrx/Splice/CI)
 
 A C# .NET solution focused on Roslyn Source Generators, specifically implementing C# 14 "Interceptors". This framework allows you to easily intercept and replace method calls at compile time.
 
@@ -9,10 +9,10 @@ A C# .NET solution focused on Roslyn Source Generators, specifically implementin
 
 ### 1. Installation 📦
 
-Add the `InterceptorFramework` as a source generator to your project. If you are using NuGet:
+Add the `Splice` as a source generator to your project. If you are using NuGet:
 
 ```sh
-dotnet add package InterceptorFramework
+dotnet add package Splice
 ```
 
 ### 2. Project Configuration ⚙️

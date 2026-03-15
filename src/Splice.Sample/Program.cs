@@ -1,5 +1,5 @@
 using System;
-using InterceptorFramework.Sample;
+using Splice.Sample;
 
 Console.WriteLine("Direct Call");
 Test.TestCaller();

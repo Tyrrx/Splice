@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
 
-namespace InterceptorFramework.Tests;
+namespace Splice.Tests;
 
 public class GenericClassInterceptionTests
 {

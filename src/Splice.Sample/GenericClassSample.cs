@@ -1,4 +1,4 @@
-namespace InterceptorFramework.Sample;
+namespace Splice.Sample;
 
 public class GenericClassSample<T>
 {

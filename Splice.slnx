@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src\Splice.Sample\Splice.Sample.csproj" />
+  <Project Path="src\Splice\Splice.csproj" />
+  <Project Path="src\Splice.Tests\Splice.Tests.csproj" />
+</Solution>

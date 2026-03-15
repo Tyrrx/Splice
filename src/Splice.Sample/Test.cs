@@ -1,6 +1,6 @@
 using System;
 
-namespace InterceptorFramework.Sample;
+namespace Splice.Sample;
 
 public class Test
 {

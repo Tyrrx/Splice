@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace InterceptorFramework.Tests;
+namespace Splice.Tests;
 
 public partial class TestMethodInterceptions
 {

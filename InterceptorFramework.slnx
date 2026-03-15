@@ -1,5 +1,0 @@
-<Solution>
-  <Project Path="InterceptorFramework.Tests/InterceptorFramework.Tests.csproj" />
-  <Project Path="InterceptorFramework/InterceptorFramework.Sample/InterceptorFramework.Sample.csproj" />
-  <Project Path="InterceptorFramework/InterceptorFramework/InterceptorFramework.csproj" />
-</Solution>

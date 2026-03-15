@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Intercept Generic Methods
 The `InterceptorSourceGenerator` MUST support intercepting calls to generic methods by generating a corresponding generic interceptor method. This includes generic methods defined in either generic or non-generic classes.
@@ -13,10 +13,3 @@ The generated interceptor MUST correctly propagate generic type arguments from t
 #### Scenario: Intercepting a generic method with multiple type parameters
 - **WHEN** a call to `GenericMethod<TKey, TValue>(TKey key, TValue value)` is intercepted
 - **THEN** the generated interceptor MUST include `<TKey, TValue>` in its signature and pass them to the intercepted call if applicable.
-
-### Requirement: Support Attribute on Generic Methods
-The `InterceptsLocationAttribute` MUST be applicable to generic methods within the generated source.
-
-#### Scenario: Attribute application
-- **WHEN** the generator identifies a call to a generic method
-- **THEN** it MUST emit the `InterceptsLocationAttribute` with correct line and column offsets pointing to the generic method call site.

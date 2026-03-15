@@ -21,8 +21,15 @@ public static partial class MyInterceptor
     [Interceptor(typeof(GenericClassSample<>), nameof(GenericClassSample<>.NonAdHocGenericMethod))]
     public static partial void InterceptNonAdHocGenericMethodInGenericClass<T>(this GenericClassSample<T> target, T value)
     {
-        Console.WriteLine($"[InterceptNonAdHocGenericMethodInGenericClass]: {value}");
+        Console.WriteLine($"[{nameof(InterceptNonAdHocGenericMethodInGenericClass)}]: {value}");
         target.NonAdHocGenericMethod(value);
+    }
+    
+    [Interceptor(typeof(GenericClassSample<>), nameof(GenericClassSample<>.AdHocGenericMethod))]
+    public static partial void InterceptAdHocGenericMethodInGenericClass<T, TValue>(this GenericClassSample<T> target, TValue value) where T : class
+    {
+        Console.WriteLine($"[{nameof(InterceptAdHocGenericMethodInGenericClass)}]: {value} and generic class type: {typeof(T).Name}");
+        target.AdHocGenericMethod(value);
     }
 
 }

@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace InterceptorFramework;
+namespace Splice;
 
 [Generator]
 public class InterceptorSourceGenerator : IIncrementalGenerator

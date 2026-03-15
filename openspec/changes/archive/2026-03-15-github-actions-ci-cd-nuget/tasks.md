@@ -3,7 +3,7 @@
 - [x] 1.1 Create `.github/workflows/ci.yml` file.
 - [x] 1.2 Define `on` triggers for `push` and `pull_request` to `main`.
 - [x] 1.3 Add steps for Checkout and .NET SDK setup.
-- [x] 1.4 Add steps for `dotnet restore` and `dotnet build` of `InterceptorFramework.slnx`.
+- [x] 1.4 Add steps for `dotnet restore` and `dotnet build` of `Splice.slnx`.
 - [x] 1.5 Add step for `dotnet test` with TRX/JUnit logging.
 - [x] 1.6 Integrate `dorny/test-reporter` or equivalent to surface test results.
 

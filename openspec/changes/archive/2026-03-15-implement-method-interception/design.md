@@ -1,6 +1,6 @@
 ## Context
 
-The `InterceptorFramework` project provides a source generator for C# 14 Interceptors. Currently, the generator has a basic structure but lacks the critical logic to:
+The `Splice` project provides a source generator for C# 14 Interceptors. Currently, the generator has a basic structure but lacks the critical logic to:
 1.  Correctly identify call sites for intercepted methods across the compilation.
 2.  Generate the necessary `[InterceptsLocation]` attributes with accurate file paths, line numbers, and column offsets.
 3.  Prevent infinite recursion when an interceptor method calls the original method it is intercepting.

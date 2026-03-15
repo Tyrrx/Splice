@@ -1,6 +1,6 @@
 ## Why
 
-Currently, the InterceptorFramework project lacks an automated CI/CD pipeline. Developers must manually build and test the source generator, which is error-prone and doesn't guarantee a fresh environment for verification. Additionally, publishing new releases and NuGet packages is a manual process that could be streamlined to ensure consistency and speed.
+Currently, the Splice project lacks an automated CI/CD pipeline. Developers must manually build and test the source generator, which is error-prone and doesn't guarantee a fresh environment for verification. Additionally, publishing new releases and NuGet packages is a manual process that could be streamlined to ensure consistency and speed.
 
 ## What Changes
 
@@ -11,7 +11,7 @@ Currently, the InterceptorFramework project lacks an automated CI/CD pipeline. D
 ## Capabilities
 
 ### New Capabilities
-- `ci-workflow`: Automated build, test, and reporting pipeline for the InterceptorFramework solution.
+- `ci-workflow`: Automated build, test, and reporting pipeline for the Splice solution.
 - `cd-workflow`: Automated release and NuGet publishing pipeline triggered by version tags.
 
 ### Modified Capabilities

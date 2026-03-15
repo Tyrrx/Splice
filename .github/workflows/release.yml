@@ -24,16 +24,16 @@ jobs:
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
     - name: Restore dependencies
-      run: dotnet restore InterceptorFramework.slnx
+      run: dotnet restore Splice.slnx
 
     - name: Build
-      run: dotnet build InterceptorFramework.slnx --configuration Release --no-restore /p:Version=${{ steps.get_version.outputs.VERSION }}
+      run: dotnet build Splice.slnx --configuration Release --no-restore /p:Version=${{ steps.get_version.outputs.VERSION }}
 
     - name: Test
-      run: dotnet test InterceptorFramework.slnx --configuration Release --no-build
+      run: dotnet test Splice.slnx --configuration Release --no-build
 
     - name: Pack
-      run: dotnet pack InterceptorFramework/InterceptorFramework/InterceptorFramework.csproj --configuration Release --no-build /p:Version=${{ steps.get_version.outputs.VERSION }} --output .
+      run: dotnet pack src/Splice/Splice.csproj --configuration Release --no-build /p:Version=${{ steps.get_version.outputs.VERSION }} --output .
 
     - name: Create Release
       uses: softprops/action-gh-release@v2

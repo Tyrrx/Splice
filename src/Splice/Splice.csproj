@@ -8,9 +8,7 @@
 
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
-
-        <RootNamespace>InterceptorFramework</RootNamespace>
-        <PackageId>InterceptorFramework</PackageId>
+        <PackageId>Splice</PackageId>
     </PropertyGroup>
 
     <ItemGroup>

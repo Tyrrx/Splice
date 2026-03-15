@@ -1,7 +1,7 @@
 using System;
 using Generators;
 
-namespace InterceptorFramework.Sample;
+namespace Splice.Sample;
 
 public static partial class MyInterceptor
 {

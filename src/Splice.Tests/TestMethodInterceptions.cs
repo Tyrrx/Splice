@@ -24,7 +24,7 @@ public partial class TestMethodInterceptions
         // language=CSharp
         """
         using System;
-        using Generators;
+        using Splice;
         namespace Test;
         public static partial class MyInterceptor
         {
@@ -83,7 +83,7 @@ public partial class TestMethodInterceptions
 
         var interceptorSource = """
             using System;
-            using Generators;
+            using Splice;
             namespace Test;
             public static partial class MyInterceptor
             {
@@ -144,7 +144,7 @@ public partial class TestMethodInterceptions
 
         var interceptorSource = """
             using System;
-            using Generators;
+            using Splice;
             namespace Test;
             public static partial class GenericInterceptor
             {

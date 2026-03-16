@@ -14,7 +14,7 @@ namespace Splice;
 [Generator]
 public class InterceptorSourceGenerator : IIncrementalGenerator
 {
-    private const string Namespace = "Generators";
+    private const string Namespace = "Splice";
     private const string AttributeName = "InterceptorAttribute";
 
     private const string AttributeSourceCode =
@@ -40,7 +40,10 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
           namespace System.Runtime.CompilerServices
           {
               [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-              public sealed class InterceptsLocationAttribute(int version, string data) : Attribute;
+              public sealed class InterceptsLocationAttribute : Attribute
+              {
+                  public InterceptsLocationAttribute(int version, string data) {}
+              }
           }
           """;
 
@@ -48,7 +51,7 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
     {
         context.RegisterPostInitializationOutput(ctx => {
             ctx.AddSource(
-                "ReportAttribute.g.cs",
+                "InterceptorAttribute.g.cs",
                 SourceText.From(AttributeSourceCode, Encoding.UTF8));
         });
 

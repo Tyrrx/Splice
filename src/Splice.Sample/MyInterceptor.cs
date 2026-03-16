@@ -1,6 +1,5 @@
 using System;
-using Generators;
-
+using Splice;
 namespace Splice.Sample;
 
 public static partial class MyInterceptor

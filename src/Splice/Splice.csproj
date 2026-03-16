@@ -12,7 +12,7 @@
         <Authors>Tyrrx</Authors>
         <Description>A C# .NET library for Roslyn Source Generators implementing C# 14 Interceptors.</Description>
         <PackageTags>roslyn;sourcegen;interceptors;csharp14</PackageTags>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/Tyrrx/Splice</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Tyrrx/Splice</RepositoryUrl>
         <RepositoryType>git</RepositoryType>

@@ -9,6 +9,11 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
         
+        <!-- Prevents the generator DLL from being placed in the /lib folder -->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <!-- Prevents NuGet from creating dependency groups when there is no lib output -->
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        
         <PackageId>Splice</PackageId>
         <Authors>Tyrrx</Authors>
         <Description>A C# .NET library for Roslyn Source Generators implementing C# 14 Interceptors.</Description>
@@ -25,6 +30,10 @@
     <ItemGroup>
         <None Include="../../README.md" Pack="true" PackagePath="\" />
         <None Include="../../LICENSE" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
     <ItemGroup>

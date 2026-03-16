@@ -41,7 +41,7 @@ public class GenericClassInterceptionTests
     {
         var interceptorSource = """
             using System;
-            using Generators;
+            using Splice;
             using TestNamespace;
 
             namespace TestNamespace
@@ -70,7 +70,7 @@ public class GenericClassInterceptionTests
     {
         var interceptorSource = """
             using System;
-            using Generators;
+            using Splice;
             using TestNamespace;
 
             namespace TestNamespace
@@ -121,7 +121,7 @@ public class GenericClassInterceptionTests
 
         var interceptorSource = """
             using System;
-            using Generators;
+            using Splice;
             using TestNamespace;
 
             namespace TestNamespace

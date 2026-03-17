@@ -1,7 +1,8 @@
-# Splice 🚀
+# Splice 🧬
 
 ![GitHub License](https://img.shields.io/github/license/Tyrrx/Splice)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Tyrrx/Splice/CI)
+![GitHub Release](https://img.shields.io/github/v/release/Tyrrx/Splice)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Tyrrx/Splice/ci.yml)
 
 A C# .NET solution focused on Roslyn Source Generators, specifically implementing C# 14 "Interceptors". This framework allows you to easily intercept and replace method calls at compile time.
 
@@ -9,10 +10,21 @@ A C# .NET solution focused on Roslyn Source Generators, specifically implementin
 
 ### 1. Installation 📦
 
+Get Splice from NuGet: [Splice](https://www.nuget.org/packages/Splice).
+
 Add the `Splice` as a source generator to your project. If you are using NuGet:
 
 ```sh
 dotnet add package Splice
+```
+
+Or via the `.csproj`:
+
+```xml
+<PackageReference Include="Splice" Version="0.0.1">
+  <PrivateAssets>all</PrivateAssets>
+  <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+</PackageReference>
 ```
 
 ### 2. Project Configuration ⚙️

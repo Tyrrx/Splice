@@ -343,7 +343,7 @@ public class InterceptorSourceGenerator : IIncrementalGenerator
 
     private string GetMethodSignature(MethodDeclarationSyntax method)
     {
-        var modifiers = method.Modifiers.Select(m => m.Text).ToList();
+        var modifiers = method.Modifiers.Select(m => m.Text).Where(m => m != "async").ToList();
         if (!modifiers.Contains("partial"))
         {
             // The 'partial' modifier must appear after other modifiers (like public static) but before the return type

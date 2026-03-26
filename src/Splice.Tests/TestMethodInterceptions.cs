@@ -190,6 +190,75 @@ public partial class TestMethodInterceptions
     }
 
 
+    [Fact]
+    public void GenerateInterceptionMethod_Async()
+    {
+        var usageSource = """
+            using System;
+            using System.Threading.Tasks;
+            public class AsyncTestClass
+            {
+                public async Task RunAsync()
+                {
+                    await DoSomethingAsync();
+                }
+
+                public async Task DoSomethingAsync()
+                {
+                    await Task.Delay(1);
+                    Console.WriteLine("Done");
+                }
+            }
+            """;
+
+        var interceptorSource = """
+            using System;
+            using System.Threading.Tasks;
+            using Splice;
+            namespace Test;
+            public static partial class AsyncInterceptor
+            {
+                [Interceptor(typeof(AsyncTestClass), nameof(AsyncTestClass.DoSomethingAsync))]
+                public static async Task InterceptAsync(this AsyncTestClass target)
+                {
+                    Console.WriteLine("[Intercepted] Starting");
+                    await target.DoSomethingAsync();
+                    Console.WriteLine("[Intercepted] Finished");
+                }
+            }
+            """;
+
+        var generator = new InterceptorSourceGenerator().AsSourceGenerator();
+        var compilation = CSharpCompilation.Create(nameof(TestMethodInterceptions) + "Async",
+            [
+                CSharpSyntaxTree.ParseText(usageSource, new CSharpParseOptions(LanguageVersion.CSharp12), cancellationToken: TestContext.Current.CancellationToken),
+                CSharpSyntaxTree.ParseText(interceptorSource, new CSharpParseOptions(LanguageVersion.CSharp12), cancellationToken: TestContext.Current.CancellationToken)
+            ],
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Task).Assembly.Location),
+                MetadataReference.CreateFromFile(System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyName(new System.Reflection.AssemblyName("System.Runtime")).Location),
+                MetadataReference.CreateFromFile(typeof(Microsoft.CodeAnalysis.CSharp.CSharpCompilation).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Microsoft.CodeAnalysis.Compilation).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(AttributeUsageAttribute).Assembly.Location)
+            ],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
+
+        var driver = CSharpGeneratorDriver.Create(
+            generators: [generator],
+            parseOptions: new CSharpParseOptions(LanguageVersion.CSharp12));
+
+        var runResult = driver.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult();
+
+        var generatedSource = string.Join("\n---\n", runResult.GeneratedTrees.Select(t => t.ToString()));
+        
+        Assert.Contains("InterceptAsync", generatedSource);
+        Assert.DoesNotContain("async partial", generatedSource);
+        Assert.Empty(runResult.Diagnostics);
+    }
+
+
     [GeneratedRegex("""\[InterceptsLocation\(version: 1, data: "[^"]+"\)\]""")]
     private static partial Regex ValidationRegex();
 }
